@@ -1,0 +1,5 @@
+pytest>=8.0
+coverage>=7.6
+ruff>=0.6
+radon>=6.0
+hypothesis>=6.112

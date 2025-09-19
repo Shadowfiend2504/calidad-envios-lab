@@ -1,0 +1,4 @@
+# file: D:\Downloads\calidad-envios-lab\src\costos.py
+# hypothesis_version: 6.139.2
+
+[1.15, 1.25, 1200.0, 1500.0, 2000.0, 5000.0, 'destino no válido', 'estandar', 'express', 'internacional', 'nacional', 'prioridad no válida']
