@@ -45,7 +45,7 @@ Se ejecutaron las comprobaciones locales de cobertura, estilo y complejidad. Res
 - Ruff: se ejecutó `ruff check .`; detectó problemas menores en los tests — la mayoría se corrigieron con `ruff check . --fix`.
 - Radon: `radon cc -s src` reportó complejidad ciclomática elevada para `calcular_costo_envio` (nivel C, valor 11). Se recomienda refactorizar si se desea reducir la complejidad por debajo de 5.
 
-> Detalles y comandos para replicar están en `README-lab.md` (sección "Cómo ejecutar").
+> Detalles y comandos para replicar están en `Ejercicio.md` (sección "Comandos utiles").
 
 ---
 # Resumen mínimo de pruebas
