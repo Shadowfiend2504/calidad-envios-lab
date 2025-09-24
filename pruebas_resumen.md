@@ -39,140 +39,31 @@ Ver: [Plan de pruebas (CA, PE/AVL) — casos sugeridos](#plan-de-pruebas-ca-peav
 
 ## Verificación de Cobertura y Calidad Estática
 
-Aún no he medido la cobertura con `coverage` ni he ejecutado los chequeos de estilo (`ruff`) y complejidad (`radon`).  
-**Siguiente acción recomendada:**
-- Ejecutar cobertura y analizar los resultados.
-- Ejecutar `ruff` para estilo.
-- Ejecutar `radon` para complejidad.
-Ver: [Cobertura y comandos recomendados](#cobertura-estilo-y-complejidad--comandos-recomendados)
+Se ejecutaron las comprobaciones locales de cobertura, estilo y complejidad. Resumen de resultados:
+
+- Coverage: 100% en `src/costos.py` (ejecutado con `coverage run -m pytest` y `coverage report -m`).
+- Ruff: se ejecutó `ruff check .`; detectó problemas menores en los tests — la mayoría se corrigieron con `ruff check . --fix`.
+- Radon: `radon cc -s src` reportó complejidad ciclomática elevada para `calcular_costo_envio` (nivel C, valor 11). Se recomienda refactorizar si se desea reducir la complejidad por debajo de 5.
+
+> Detalles y comandos para replicar están en `README-lab.md` (sección "Cómo ejecutar").
 
 ---
+# Resumen mínimo de pruebas
 
-## Reporte Final Pendiente
+Acciones clave:
 
-Falta redactar el reporte de 1 página incluyendo:
-- Plan de pruebas (tabla PE/AVL)
-- Evidencia de tests (salida pytest)
-- Cobertura (tras medirla)
-- Salidas de `ruff` y `radon`
-- Tres defectos prevenidos (identificados a partir de los tests y validaciones implementadas)
+- Implementada `calcular_costo_envio` con validaciones, tramos por peso, recargos y redondeo.
+- Tests unitarios: casos válidos, casos inválidos y pruebas de límites (PE + AVL).
+- Se recomienda ejecutar coverage, ruff y radon para verificar calidad y complejidad.
 
-Ver: [Reporte Final Pendiente](#reporte-final-pendiente)
+## Casos de prueba (resumen)
 
----
+- Válidos: peso 1 (0<p<=5), peso 5 (límite), peso 6 (5<p<=20), peso 20 (límite), peso 21 (>20), internacional, express, internacional+express.
+- Inválidos: peso 0, peso negativo, destino inválido, prioridad inválida.
+## Cómo encajan en un flujo TDD + calidad
 
-## Mapeo a la Rúbrica (Estado por Ítem)
-
-- Plan de pruebas (CA, PE/AVL bien justificado): Parcialmente hecho, tabla PE/AVL propuesta y casos sugeridos ([Ver tabla](#plan-de-pruebas-ca-peavl--casos-sugeridos))
-- Tests + cobertura ≥ 90%: Tests ejecutados, falta medir cobertura ([Ver comandos](#cobertura-estilo-y-complejidad--comandos-recomendados))
-- Calidad estática (ruff ok) y complejidad (radon ≤ 5): No ejecutado aún, instrucciones listadas ([Ver comandos](#cobertura-estilo-y-complejidad--comandos-recomendados))
-- Reporte claro (1 página): Pendiente de elaboración ([Ver pendiente](#reporte-final-pendiente))
-
----
-
-## Plan de pruebas (CA, PE/AVL) — Casos Sugeridos
-
-**Objetivo:** cubrir particiones y límites. Incluyo 8 casos válidos y 4 inválidos.
-
-### Casos válidos (8)
-
-1. **CA1 — Peso pequeño, nacional, estandar (peso límite inferior dentro del rango 0 < p <= 5)**
-   ```python
-   # Entrada:
-   calcular_costo_envio(peso=1.0, destino='nacional', prioridad='estandar')
-   # Resultado esperado:
-   # base 5000 + 2000*1 = 7000 → redondeo 7000
-   ```
-2. **CA2 — Peso en límite 5 kg, nacional, estandar (AVL)**
-   ```python
-   calcular_costo_envio(peso=5.0, destino='nacional', prioridad='estandar')
-   # Esperado: 5000 + 2000*5 = 15000
-   ```
-3. **CA3 — Peso 6 kg (rango 5 < p <= 20), nacional, estandar**
-   ```python
-   calcular_costo_envio(peso=6.0, destino='nacional', prioridad='estandar')
-   # Esperado: 5000 + 1500*6 = 14000
-   ```
-4. **CA4 — Peso 20 kg (límite) nacional, estandar (AVL)**
-   ```python
-   calcular_costo_envio(peso=20.0, destino='nacional', prioridad='estandar')
-   # Esperado: 5000 + 1500*20 = 35000
-   ```
-5. **CA5 — Peso 21 kg (>20), nacional, estandar**
-   ```python
-   calcular_costo_envio(peso=21.0, destino='nacional', prioridad='estandar')
-   # Esperado: 5000 + 1200*21 = 30200
-   ```
-6. **CA6 — Internacional, impacto del 25% (verificar multiplicación)**
-   ```python
-   calcular_costo_envio(peso=10.0, destino='internacional', prioridad='estandar')
-   # Subtotal: 5000 + 1500*10 = 20000 → *1.25 = 25000
-   ```
-7. **CA7 — Express, impacto del 15% (verificar multiplicación)**
-   ```python
-   calcular_costo_envio(peso=10.0, destino='nacional', prioridad='express')
-   # Subtotal: 20000 → *1.15 = 23000
-   ```
-8. **CA8 — Internacional + Express (combinación multiplicativa)**
-   ```python
-   calcular_costo_envio(peso=2.5, destino='internacional', prioridad='express')
-   # Subtotal: 5000 + 2000*2.5 = 10000 → *1.25 = 12500 → *1.15 = 14375 → redondeo 14375
-   ```
-
-### Casos inválidos (4)
-
-1. **INV1 — Peso 0 (error)**
-   ```python
-   calcular_costo_envio(peso=0, destino='nacional', prioridad='estandar')
-   # Esperado: ValueError
-   ```
-2. **INV2 — Peso negativo (error)**
-   ```python
-   calcular_costo_envio(peso=-1, destino='nacional', prioridad='estandar')
-   # Esperado: ValueError
-   ```
-3. **INV3 — Destino inválido (error)**
-   ```python
-   calcular_costo_envio(peso=1, destino='interplanetario', prioridad='estandar')
-   # Esperado: ValueError
-   ```
-4. **INV4 — Prioridad inválida (error)**
-   ```python
-   calcular_costo_envio(peso=1, destino='nacional', prioridad='urgente')
-   # Esperado: ValueError
-   ```
-
-> _Estos casos deben estar representados en los tests unitarios y agregarse si faltan en `test_costos.py`._
-
----
-
-## Cobertura, Estilo y Complejidad — Comandos Recomendados
-
-- **Ejecutar tests:**  
-  ```sh
-  .venv\Scripts\Activate.ps1
-  python -m pytest -q
-  ```
-
-- **Medir cobertura:**
-  ```sh
-  python -m pip install coverage
-  python -m coverage run -m pytest
-  python -m coverage report -m
-  ```
-
-- **Estilo y complejidad:**
-  ```sh
-  python -m pip install ruff radon
-  ruff check .
-  radon cc -s -a src
-  ```
-
-- **Interpretación:**
-  - `coverage report -m` debe mostrar un porcentaje total ≥ 90% (si no, añadir tests).
-  - `ruff check .` → 0 errores (si hay errores, se corrigen).
-  - `radon cc -s -a src` → "Average complexity" media ≤ 5 (si es mayor, refactorizar funciones de alto CC).
-
----
-
-## Para consultar detalles, utiliza los accesos directos de código en cada apartado.
+- PE + AVL: diseñar los tests unitarios (casos representativos + límites).
+- TDD: escribir tests (PE/AVL) primero, luego implementar `calcular_costo_envio`.
+- Ruff: mantener estilo y detectar problemas simples durante desarrollo.
+- Radon: evaluar complejidad y decidir refactorizaciones para mejorar testabilidad.
+- Hypothesis: añadir pruebas de propiedad para capturar casos inesperados automáticamente.
